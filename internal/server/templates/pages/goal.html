@@ -1,0 +1,41 @@
+{{define "content"}}
+<div class="stack">
+
+  <h1 class="page-title">Цель по весу</h1>
+
+  <form class="stack" autocomplete="off">
+    <div class="field-row">
+      <label class="field">
+        <span class="field__label">Целевой вес, кг</span>
+        <input type="number" step="0.1" min="20" max="400" value="72">
+      </label>
+      <label class="field">
+        <span class="field__label">Срок</span>
+        <input type="date" value="2026-10-15">
+      </label>
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="row" style="border: 0; padding: 0 0 6px; font-size: 13px">
+      <span class="muted">78,0</span>
+      <span style="font-weight: 600">74,2</span>
+      <span class="muted">72,0</span>
+    </div>
+    <div class="bar"><div class="bar__fill" style="width: 63%"></div></div>
+    <p class="label" style="margin: 8px 0 0">Пройдено 63%, осталось 2,2 кг</p>
+  </div>
+
+  <div class="card card--list">
+    <div class="row"><span class="muted">Нужный темп</span><span>0,36 кг/нед</span></div>
+    <div class="row"><span class="muted">Текущий темп</span><span>0,42 кг/нед</span></div>
+    <div class="row"><span class="muted">Прогноз</span><span>7 октября</span></div>
+    <div class="row"><span class="muted">Дефицит</span><span>≈ 400 ккал/день</span></div>
+  </div>
+
+  <p class="note note--ok"><i class="ti ti-check"></i> Темп безопасный, до 1 кг в неделю</p>
+
+  <button class="btn" type="button">Сохранить цель</button>
+
+</div>
+{{end}}

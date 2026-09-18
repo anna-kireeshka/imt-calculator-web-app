@@ -1,0 +1,35 @@
+{{define "content"}}
+<div class="stack">
+
+  <h1 class="page-title">Ещё</h1>
+
+  <div class="person">
+    <div class="avatar" aria-hidden="true">{{.Initials}}</div>
+    <div>
+      <p class="person__name">{{if .Name}}{{.Name}}{{else}}Alex{{end}}</p>
+      <p class="person__meta">Мужской, 32 года, 178 см</p>
+    </div>
+  </div>
+
+  <p class="label">Напоминания</p>
+  <div class="card card--list">
+    <div class="row">
+      <span>Взвешивание<br><span class="muted" style="font-size: 12px">Понедельник, 08:00</span></span>
+      <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Напоминание о взвешивании"></button>
+    </div>
+    <div class="row">
+      <span>Дневник калорий<br><span class="muted" style="font-size: 12px">Каждый день, 21:00</span></span>
+      <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Напоминание о дневнике"></button>
+    </div>
+    <div class="row">
+      <span>Недельный отчёт<br><span class="muted" style="font-size: 12px">Воскресенье, 19:00</span></span>
+      <button class="switch" type="button" role="switch" aria-checked="false" aria-label="Недельный отчёт"></button>
+    </div>
+  </div>
+
+  <div class="card card--list">
+    <div class="row"><span><i class="ti ti-target"></i> Цель по весу</span><a href="/goal" class="muted">72 кг <i class="ti ti-chevron-right"></i></a></div>
+  </div>
+
+</div>
+{{end}}

@@ -1,0 +1,98 @@
+package views
+
+// Onboarding — анкета перед первым расчётом. Оба шага приходят в одном
+// документе, второй скрыт: между ними нет запроса к серверу, поэтому
+// перезагрузка страницы только мигала бы и теряла введённое.
+templ Onboarding(page Page) {
+	@Layout(page) {
+		<form class="stack" id="onboarding" autocomplete="off" novalidate>
+			<div
+				class="steps"
+				id="ob-steps"
+				role="progressbar"
+				aria-label="Шаг анкеты"
+				aria-valuemin="1"
+				aria-valuemax="2"
+				aria-valuenow="1"
+			>
+				<span class="steps__bar" data-done="1"></span>
+				<span class="steps__bar"></span>
+			</div>
+			<section class="stack" data-step="1">
+				<h1 class="page-title">Привет!</h1>
+				<p class="lede">
+					Чтобы рассчитать идеальный вес и норму калорий, нужно несколько данных о вас.
+				</p>
+				<div class="field">
+					<span class="field__label" id="ob-dob-label">Дата рождения</span>
+					<div class="field-row" role="group" aria-labelledby="ob-dob-label">
+						<label class="field">
+							<span class="field__label">Год</span>
+							<input type="number" id="ob-year" inputmode="numeric" step="1" min="1900" max="2100" placeholder="1994"/>
+						</label>
+						<label class="field field--grow">
+							<span class="field__label">Месяц</span>
+							<select id="ob-month">
+								<option value="">—</option>
+								for _, month := range months {
+									<option value={ month.Value }>{ month.Label }</option>
+								}
+							</select>
+						</label>
+						<label class="field">
+							<span class="field__label">День</span>
+							<input type="number" id="ob-day" inputmode="numeric" step="1" min="1" max="31" placeholder="21"/>
+						</label>
+					</div>
+				</div>
+				<p class="hint-text">По ней считается базовый обмен — сколько энергии тело тратит в покое.</p>
+				<div class="field">
+					<span class="field__label">Пол</span>
+					<div class="segmented" id="ob-gender" role="group" aria-label="Пол">
+						<button type="button" data-value="0" aria-pressed="false">Мужской</button>
+						<button type="button" data-value="1" aria-pressed="false">Женский</button>
+					</div>
+				</div>
+				<p class="error-text" id="ob-error-1" role="alert"></p>
+				<button class="btn" type="button" id="ob-next">Сохранить</button>
+			</section>
+			<section class="stack" data-step="2" hidden>
+				<h1 class="page-title">Ещё пара цифр</h1>
+				<div class="field-row">
+					<label class="field">
+						<span class="field__label">Рост, см</span>
+						<input type="number" id="ob-height" inputmode="numeric" step="1" min="100" max="250" placeholder="178"/>
+					</label>
+					<label class="field">
+						<span class="field__label">Вес, кг</span>
+						<input type="number" id="ob-weight" inputmode="decimal" step="0.1" min="20" max="400" placeholder="72"/>
+					</label>
+				</div>
+				<div class="field">
+					<span class="field__label">Цель</span>
+					<div class="segmented" id="ob-goal" role="group" aria-label="Цель">
+						for _, goal := range goals {
+							<button
+								type="button"
+								data-value={ goal.Value }
+								aria-pressed={ boolAttr(goal.Value == defaultGoal) }
+							>{ goal.Label }</button>
+						}
+					</div>
+				</div>
+				<label class="field">
+					<span class="field__label">Уровень активности</span>
+					<select id="ob-activity">
+						for _, activity := range activities {
+							<option value={ string(activity.Value) } selected?={ activity.Value == defaultActivity }>
+								{ activity.Label }
+							</option>
+						}
+					</select>
+				</label>
+				<p class="error-text" id="ob-error-2" role="alert"></p>
+				<button class="btn" type="submit" id="ob-submit">Рассчитать</button>
+			</section>
+		</form>
+	}
+}

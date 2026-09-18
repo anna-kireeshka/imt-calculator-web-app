@@ -1,0 +1,11 @@
+package views
+
+// header виден только вне Telegram: внутри клиента свою шапку рисует
+// сам Telegram, и вторая была бы лишней (скрыта через [data-tg="1"]).
+templ header() {
+	<header class="app-header">
+		<a href="https://t.me/fitcalc_bot"><i class="ti ti-brand-telegram"></i> Открыть в Telegram</a>
+		<span class="app-header__title">FitCalc</span>
+		<a href="/settings" aria-label="Настройки"><i class="ti ti-settings"></i></a>
+	</header>
+}

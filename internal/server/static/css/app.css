@@ -1,0 +1,521 @@
+/* ──────────────────────────────────────────────────────────────
+   FitCalc — Telegram Mini App
+   Цвета приходят из Telegram.WebApp.themeParams как --tg-theme-*.
+   Вне Telegram этих переменных нет, поэтому каждая берётся
+   с фолбэком из --fb-*, который переключает prefers-color-scheme.
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  --fb-bg: #ffffff;
+  --fb-bg-secondary: #f0f0f0;
+  --fb-bg-section: #ffffff;
+  --fb-text: #000000;
+  --fb-hint: #8e8e93;
+  --fb-link: #2481cc;
+  --fb-button: #2481cc;
+  --fb-button-text: #ffffff;
+  --fb-separator: #e5e5ea;
+
+  --ok: #34c759;
+  --ok-bg: #e8f8ec;
+  --warn: #ff9500;
+  --warn-bg: #fff3e0;
+  --bad: #ff3b30;
+  --bad-bg: #ffe9e7;
+  --low: #0a84ff;
+  --low-bg: #e3f1ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fb-bg: #212121;
+    --fb-bg-secondary: #181818;
+    --fb-bg-section: #2c2c2c;
+    --fb-text: #ffffff;
+    --fb-hint: #aaaaaa;
+    --fb-link: #6ab3f3;
+    --fb-button: #3e88c9;
+    --fb-button-text: #ffffff;
+    --fb-separator: #3a3a3a;
+
+    --ok: #30d158;
+    --ok-bg: #1c3a25;
+    --warn: #ff9f0a;
+    --warn-bg: #3d2e12;
+    --bad: #ff453a;
+    --bad-bg: #3d1c19;
+    --low: #0a84ff;
+    --low-bg: #16283d;
+  }
+}
+
+:root {
+  --bg: var(--tg-theme-bg-color, var(--fb-bg));
+  --bg-secondary: var(--tg-theme-secondary-bg-color, var(--fb-bg-secondary));
+  --bg-section: var(--tg-theme-section-bg-color, var(--fb-bg-section));
+  --text: var(--tg-theme-text-color, var(--fb-text));
+  --hint: var(--tg-theme-hint-color, var(--fb-hint));
+  --link: var(--tg-theme-link-color, var(--fb-link));
+  --button: var(--tg-theme-button-color, var(--fb-button));
+  --button-text: var(--tg-theme-button-text-color, var(--fb-button-text));
+  --separator: var(--tg-theme-section-separator-color, var(--fb-separator));
+
+  --gap: 12px;
+  --pad: 16px;
+  /* Mini App живёт в колонке шириной с телефон. В обычном браузере
+     экран шире, поэтому лишнее место уходит в боковые поля. */
+  --column: 460px;
+  --side: max(var(--pad), calc((100% - var(--column)) / 2));
+  --radius-card: 14px;
+  --radius-control: 12px;
+  --radius-field: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Браузерное [hidden] { display: none } живёт в UA-стилях, а любой авторский
+   display его перебивает — .stack{display:flex} оставлял скрытый блок видимым. */
+[hidden] { display: none !important; }
+
+/* ── каркас ─────────────────────────────────────────────────────
+   Шапка и таб-бар зафиксированы, скроллит только .app-main.
+   100dvh, а не 100vh: vh не учитывает сворачивающуюся адресную
+   строку мобильного браузера, и низ экрана уезжает под неё.
+   ────────────────────────────────────────────────────────────── */
+
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+
+body {
+  height: 100dvh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "SF Pro Text", Roboto, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.app-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--side);
+  padding-top: max(12px, env(safe-area-inset-top));
+  font-size: 14px;
+  color: var(--link);
+}
+
+.app-header__title { font-weight: 600; color: var(--text); }
+.app-header a { color: inherit; text-decoration: none; }
+
+/* Внутри Telegram шапку рисует сам клиент — своя была бы второй. */
+[data-tg="1"] .app-header { display: none; }
+
+.app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px var(--side) 16px;
+}
+
+.app-main--center { display: flex; flex-direction: column; }
+
+.stack { display: flex; flex-direction: column; gap: var(--gap); }
+
+.page-title { margin: 4px 0 0; font-size: 20px; font-weight: 600; }
+
+/* ── таб-бар ────────────────────────────────────────────────── */
+
+.tabbar {
+  flex: none;
+  display: flex;
+  border-top: 1px solid var(--separator);
+  padding: 8px var(--side) 6px;
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.tabbar__item {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--hint);
+  text-decoration: none;
+  padding: 2px 0;
+  border-radius: 8px;
+}
+
+.tabbar__item i { display: block; font-size: 22px; margin-bottom: 2px; }
+.tabbar__item[aria-current="page"] { color: var(--link); }
+
+/* ── поля ───────────────────────────────────────────────────── */
+
+.field { display: block; }
+
+.field__label, .label {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--hint);
+}
+
+.field-row { display: flex; gap: 8px; }
+.field-row > .field { flex: 1; min-width: 0; }
+/* Название месяца длиннее «Год» и «День», поэтому колонка шире. */
+.field-row > .field--grow { flex: 1.5; }
+
+input, select {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-field);
+  background: var(--bg-section);
+  color: var(--text);
+  padding: 0 12px;
+  font: inherit;
+  font-size: 15px;
+}
+
+select {
+  appearance: none;
+  padding-right: 32px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--hint) 50%),
+                    linear-gradient(135deg, var(--hint) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 18px, calc(100% - 12px) 18px;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+input:focus, select:focus { outline: none; border-color: var(--link); }
+
+input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 1px;
+}
+
+.error-text { margin: 0; min-height: 16px; font-size: 13px; color: var(--bad); }
+
+/* ── кнопки ─────────────────────────────────────────────────── */
+
+.btn, .btn-quiet {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn {
+  background: var(--button);
+  color: var(--button-text);
+  padding: 13px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.btn:active { opacity: .85; }
+
+.btn-quiet { background: transparent; color: var(--link); padding: 12px; font-size: 15px; }
+
+.btn-icon { width: 44px; flex: none; padding: 0; height: 40px; }
+
+/* ── сегментированный переключатель ─────────────────────────── */
+
+.segmented {
+  display: flex;
+  background: var(--bg-section);
+  border-radius: var(--radius-field);
+  padding: 3px;
+  gap: 3px;
+}
+
+.segmented button, .segmented a {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--hint);
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.segmented [aria-current="page"],
+.segmented [aria-pressed="true"] { background: var(--button); color: var(--button-text); }
+
+/* ── онбординг ──────────────────────────────────────────────── */
+
+/* Две полосы вместо «01 / 02»: шагов всего два, и номер здесь не несёт
+   информации — важно только, сколько пройдено. */
+.steps { display: flex; gap: 6px; margin: 8px 0 0; }
+
+.steps__bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--separator);
+  transition: background .2s;
+}
+
+.steps__bar[data-done="1"] { background: var(--button); }
+
+.lede { margin: 0; max-width: 34ch; font-size: 15px; line-height: 1.5; color: var(--hint); }
+
+/* Пояснение под полем: тот же размер, что и .field__label, но с отступом
+   сверху, потому что стоит после поля, а не перед ним. */
+.hint-text { margin: -4px 0 0; font-size: 13px; line-height: 1.4; color: var(--hint); }
+
+/* ── карточки и строки ──────────────────────────────────────── */
+
+.card { background: var(--bg-section); border-radius: var(--radius-card); padding: 12px 14px; }
+.card--list { padding: 4px 14px; }
+
+.card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.card-grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  padding: 10px 0;
+  border-top: 1px solid var(--separator);
+}
+
+.row:first-child { border-top: 0; }
+.row a { color: inherit; text-decoration: none; }
+
+.muted { color: var(--hint); }
+
+/* Итоговая строка нормы: единственная из списка, ради которой открывают экран. */
+.row--accent { font-weight: 600; }
+.row--accent span:last-child { color: var(--link); }
+
+.metric { text-align: center; }
+.metric p { margin: 2px 0 0; font-size: 12px; }
+
+.figure { font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.figure--small { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.readout { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+.pill {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  background: var(--bg-secondary);
+  color: var(--hint);
+}
+
+.pill[data-zone="low"]  { background: var(--low-bg);  color: var(--low); }
+.pill[data-zone="ok"]   { background: var(--ok-bg);   color: var(--ok); }
+.pill[data-zone="warn"] { background: var(--warn-bg); color: var(--warn); }
+.pill[data-zone="bad"]  { background: var(--bad-bg);  color: var(--bad); }
+
+.delta--down { color: var(--ok); font-size: 13px; }
+.delta--up { color: var(--bad); font-size: 13px; }
+
+.note { border-radius: var(--radius-control); padding: 10px 12px; font-size: 13px; }
+.note--ok { background: var(--ok-bg); color: var(--ok); }
+.note--warn { background: var(--warn-bg); color: var(--warn); }
+
+/* ── шкала ИМТ и прогресс ───────────────────────────────────── */
+
+/* Сегменты и подписи делят ширину одними и теми же долями (18,5 : 6,5 : 5 : 10
+   от шкалы 0–40), поэтому число стоит ровно под границей своей зоны,
+   а маркер — под своим числом. */
+.gauge-wrap {
+  position: relative;
+  margin: 12px 0 4px;
+}
+
+.gauge {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gauge__pin {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 12px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--text);
+  box-shadow: 0 0 0 2px var(--bg-section);
+  transition: left .25s ease-out;
+}
+
+.gauge > span { display: block; }
+
+/* Границы зон вместо gap: ширина сегментов остаётся линейной,
+   поэтому процент маркера совпадает с делениями. */
+.gauge > span + span { border-left: 1px solid var(--bg-section); }
+
+/* Доли общие для сегментов и подписей — так число встаёт ровно под
+   границей своей зоны. */
+.gauge__low  { flex: 18.5; }
+.gauge__ok   { flex: 6.5; }
+.gauge__warn { flex: 5; }
+.gauge__bad  { flex: 10; }
+
+/* Цвет — только у сегментов шкалы: те же классы висят и на подписях,
+   и без этой вложенности числа превращались во вторую цветную полосу. */
+.gauge > .gauge__low  { background: var(--low); }
+.gauge > .gauge__ok   { background: var(--ok); }
+.gauge > .gauge__warn { background: var(--warn); }
+.gauge > .gauge__bad  { background: var(--bad); }
+
+.gauge-marks {
+  display: flex;
+  font-size: 11px;
+  color: var(--hint);
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge-marks span { text-align: right; }
+
+.bar { height: 8px; border-radius: 4px; background: var(--bg-secondary); overflow: hidden; }
+.bar__fill { height: 100%; background: var(--button); transition: width .2s; }
+.bar__fill[data-over="1"] { background: var(--bad); }
+
+.chart { display: block; width: 100%; }
+
+/* ── переключатель ──────────────────────────────────────────── */
+
+.switch {
+  width: 44px;
+  height: 26px;
+  flex: none;
+  border: 0;
+  padding: 0;
+  border-radius: 13px;
+  background: var(--ok);
+  position: relative;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .15s;
+}
+
+.switch[aria-checked="false"] { background: var(--separator); }
+.switch[aria-checked="false"]::after { transform: translateX(-18px); }
+
+/* ── профиль ────────────────────────────────────────────────── */
+
+.person { display: flex; align-items: center; gap: 12px; }
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--button);
+  color: var(--button-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.person p { margin: 0; }
+.person__name { font-weight: 600; }
+.person__meta { font-size: 13px; color: var(--hint); }
+
+/* ── состояния: загрузка, ошибка, вне Telegram ──────────────── */
+
+.state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 24px 16px;
+}
+
+.state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  margin-bottom: 8px;
+  background: var(--bg-section);
+  color: var(--link);
+}
+
+.state__icon--warn { background: var(--warn-bg); color: var(--warn); }
+.state__icon--bad { background: var(--bad-bg); color: var(--bad); }
+
+.state__title { margin: 0; font-size: 18px; font-weight: 600; }
+
+.state__text {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--hint);
+}
+
+.state__meta { font-size: 12px; margin-top: 8px; }
+
+.state__caption {
+  margin-inline: auto;
+  text-align: center;
+  font-size: 12px;
+}
+
+.actions { display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
+
+.skeleton { background: var(--bg-section); border-radius: var(--radius-field); animation: pulse 1.4s ease-in-out infinite; }
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--separator);
+  border-top-color: var(--button);
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+
+@keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
+@keyframes spin { to { transform: rotate(360deg) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .spinner { animation: none; }
+  .bar__fill, .switch, .switch::after, .gauge__pin { transition: none; }
+}

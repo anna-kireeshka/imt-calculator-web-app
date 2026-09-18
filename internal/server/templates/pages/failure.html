@@ -1,0 +1,13 @@
+{{define "content"}}
+<div class="state">
+  <div class="state__icon state__icon--bad"><i class="ti ti-server-off"></i></div>
+  <p class="state__title">Сервис временно недоступен</p>
+  <p class="state__text">Мы уже знаем о проблеме. История и напоминания появятся, как только всё починим.</p>
+  {{if .Detail}}<p class="state__text state__meta">{{.Detail}}</p>{{end}}
+</div>
+
+<div class="actions">
+  <button class="btn" type="button" data-retry><i class="ti ti-refresh"></i> Повторить</button>
+  <a class="btn-quiet" href="https://t.me/fitcalc_bot"><i class="ti ti-message"></i> Написать в поддержку</a>
+</div>
+{{end}}

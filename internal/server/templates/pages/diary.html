@@ -1,0 +1,61 @@
+{{define "content"}}
+<div class="stack">
+
+  <h1 class="page-title">Дневник калорий</h1>
+
+  <div class="segmented">
+    <a href="/calories">Расчёт</a>
+    <a href="/diary" aria-current="page">Дневник</a>
+  </div>
+
+  <div class="card">
+    <div class="readout">
+      <span class="figure" id="diary-total">1 640</span>
+      <span class="muted">/ 2 100 ккал</span>
+    </div>
+    <div class="bar" style="margin: 8px 0 4px">
+      <div class="bar__fill" id="diary-bar" style="width: 78%"></div>
+    </div>
+    <p class="label" id="diary-left">Осталось 460 ккал</p>
+  </div>
+
+  <div class="card-grid card-grid--three">
+    <div class="card">
+      <p class="label">Белки</p>
+      <span class="figure--small">98</span> <span class="muted">/130</span>
+    </div>
+    <div class="card">
+      <p class="label">Жиры</p>
+      <span class="figure--small">54</span> <span class="muted">/70</span>
+    </div>
+    <div class="card">
+      <p class="label">Углеводы</p>
+      <span class="figure--small">190</span> <span class="muted">/235</span>
+    </div>
+  </div>
+
+  <div class="card card--list" id="diary-list">
+    <div class="row"><span>Завтрак</span><span>520</span></div>
+    <div class="row"><span>Обед</span><span>740</span></div>
+    <div class="row"><span>Перекус</span><span>380</span></div>
+  </div>
+
+  <form class="stack" id="diary-form" autocomplete="off" novalidate>
+    <div class="field-row">
+      <label class="field">
+        <span class="field__label">Приём пищи</span>
+        <input type="text" id="diary-name" placeholder="Ужин">
+      </label>
+      <label class="field" style="flex: 0 0 96px">
+        <span class="field__label">Ккал</span>
+        <input type="number" id="diary-kcal" inputmode="numeric" min="1" max="10000" placeholder="480">
+      </label>
+    </div>
+    <p class="error-text" id="diary-error" role="alert"></p>
+    <button class="btn" type="submit">Добавить запись</button>
+  </form>
+
+</div>
+{{end}}
+
+{{define "scripts"}}<script src="/static/js/diary.js" defer></script>{{end}}

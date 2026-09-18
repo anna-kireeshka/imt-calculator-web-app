@@ -1,0 +1,31 @@
+package views
+
+// Layout — общий каркас: шапка, скроллящийся main и таб-бар.
+// Содержимое страницы приходит через { children... }.
+templ Layout(page Page) {
+	<!DOCTYPE html>
+	<html lang="ru">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+			<meta name="color-scheme" content="light dark"/>
+			<title>{ page.Title }</title>
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+			<link rel="stylesheet" href="/static/css/app.css"/>
+			<script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+		</head>
+		<body>
+			@header()
+			<main class={ "app-main", templ.KV("app-main--center", page.Centered) }>
+				{ children... }
+			</main>
+			if page.Tab != "" {
+				@tabbar(page)
+			}
+			<script src="/static/js/app.js" defer></script>
+			for _, src := range page.Scripts {
+				<script src={ src } defer></script>
+			}
+		</body>
+	</html>
+}

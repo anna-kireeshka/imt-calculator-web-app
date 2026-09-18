@@ -1,0 +1,12 @@
+package views
+
+templ tabbar(page Page) {
+	<nav class="tabbar">
+		for _, tab := range tabs {
+			<a class="tabbar__item" href={ templ.SafeURL(tab.Href) } { current(page.Tab == tab.ID)... }>
+				<i class={ "ti", tab.Icon }></i>
+				{ tab.Label }
+			</a>
+		}
+	</nav>
+}

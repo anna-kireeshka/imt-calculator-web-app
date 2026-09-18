@@ -1,0 +1,59 @@
+package views
+
+// Result — итог расчёта: ИМТ и норма калорий на одном экране.
+// Раньше это были /(ИМТ) и /calories с дублирующими формами ввода;
+// данные теперь собирает онбординг, здесь остаются только показатели.
+templ Result(page Page) {
+	@Layout(page) {
+		<div class="stack">
+			<h1 class="page-title">Ваши показатели</h1>
+			<div class="card">
+				<p class="label">Индекс массы тела</p>
+				<div class="readout" aria-live="polite">
+					<span class="figure" id="bmi-value">—</span>
+					<span class="pill" id="bmi-zone">Нет данных</span>
+				</div>
+				<div class="gauge-wrap" aria-hidden="true">
+					<div class="gauge">
+						<span class="gauge__low"></span>
+						<span class="gauge__ok"></span>
+						<span class="gauge__warn"></span>
+						<span class="gauge__bad"></span>
+					</div>
+					<span class="gauge__pin" id="bmi-pin" hidden></span>
+				</div>
+				<div class="gauge-marks" aria-hidden="true">
+					<span class="gauge__low">18,5</span>
+					<span class="gauge__ok">25</span>
+					<span class="gauge__warn">30</span>
+					<span class="gauge__bad">40</span>
+				</div>
+			</div>
+			<div class="card card--list" aria-live="polite">
+				<div class="row row--accent">
+					<span id="cal-target-label">Ваша норма</span>
+					<span id="cal-target">—</span>
+				</div>
+			</div>
+			<div class="card">
+				<p class="label">Белки, жиры, углеводы в день</p>
+				<div class="card-grid card-grid--three">
+					<div class="metric">
+						<span class="figure--small" id="cal-protein">—</span>
+						<p class="muted">Белки</p>
+					</div>
+					<div class="metric">
+						<span class="figure--small" id="cal-fat">—</span>
+						<p class="muted">Жиры</p>
+					</div>
+					<div class="metric">
+						<span class="figure--small" id="cal-carbs">—</span>
+						<p class="muted">Углеводы</p>
+					</div>
+				</div>
+			</div>
+			<p class="error-text" id="result-error" role="alert"></p>
+			<a class="btn-quiet" href="/onboarding">Изменить данные</a>
+		</div>
+	}
+}
