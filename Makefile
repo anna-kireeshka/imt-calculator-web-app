@@ -44,17 +44,17 @@ docker-build:
 ## ── Database ─────────────────────────────────────────────────────────────────
 
 migrate-up:
-	goose -dir database/migrations postgres $(DB_DSN) up
+	goose -dir internal/database/migrations postgres $(DB_DSN) up
 
 migrate-down:
-	goose -dir database/migrations postgres $(DB_DSN) down
+	goose -dir internal/database/migrations postgres $(DB_DSN) down
 
 migrate-status:
-	goose -dir database/migrations postgres $(DB_DSN) status
+	goose -dir internal/database/migrations postgres $(DB_DSN) status
 
 migrate-reset:
-	goose -dir database/migrations postgres $(DB_DSN) reset
+	goose -dir internal/database/migrations postgres $(DB_DSN) reset
 
 migrate-create:
 	@read -p "Migration name: " name; \
-	goose -dir database/migrations create $$name sql
+	goose -dir internal/database/migrations create $$name sql

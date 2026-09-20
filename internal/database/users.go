@@ -23,13 +23,18 @@ func (r *userRepo) Save(ctx context.Context, userID int64, dob time.Time, gender
 	var result domain.User
 
 	if err := r.conn.QueryRow(ctx, `
-		INSERT INTO users (id, dob, gender)
-		VALUES ($1, $2, $3)
-		RETURNING id, telegram_id, name, dob, gender, created_at, updated_at
+		INSERT INTO users (id, telegram_id, dob, gender)
+		VALUES ($1, $1, $2, $3)
+		ON CONFLICT (id) DO UPDATE SET
+			telegram_id = EXCLUDED.telegram_id,
+			dob         = EXCLUDED.dob,
+			gender      = EXCLUDED.gender,
+			updated_at  = now()
+		RETURNING id, telegram_id, COALESCE(name, ''), dob, gender, created_at, updated_at
 	`, userID, dob, gender).
 		Scan(&result.ID, &result.TelegramID, &result.Name, &result.DoB, &result.Gender,
 			&result.CreatedAt, &result.UpdatedAt); err != nil {
-		return domain.User{}, fmt.Errorf("commit tx: %w", err)
+		return domain.User{}, fmt.Errorf("save user: %w", err)
 	}
 	return result, nil
 }
