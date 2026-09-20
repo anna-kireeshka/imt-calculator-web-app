@@ -110,9 +110,14 @@
     }).catch(function () {});
   });
 
-  document.getElementById('ob-back').addEventListener('click', function () {
-    goToStep(1);
-  });
+  // Необязательный элемент: обращение через if, иначе одна недостающая
+  // кнопка обрывает весь скрипт и вместе с ним отправку анкеты.
+  const backButtonInPage = document.getElementById('ob-back');
+  if (backButtonInPage) {
+    backButtonInPage.addEventListener('click', function () {
+      goToStep(1);
+    });
+  }
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -291,5 +296,55 @@
     });
   });
 
-  goToStep(1);
+  start();
+
+  // С какого шага открывать анкету, решает сервер: у заведённого пользователя
+  // дата рождения и пол уже есть, и спрашивать их заново незачем — ему нужны
+  // только замеры.
+  function start() {
+    const tg = window.fitcalc.tg;
+    if (!tg || !tg.initData) {
+      goToStep(1);
+      return;
+    }
+
+    // Пока ответ не пришёл, не показываем ни один шаг: иначе первый успеет
+    // мелькнуть и сразу смениться вторым.
+    panels.forEach(function (panel) {
+      panel.hidden = true;
+    });
+
+    fetch('/api/v1/user', {
+      headers: { 'Authorization': 'tma ' + tg.initData }
+    }).then(function (response) {
+      // 404 — обычный ответ для новичка, а не ошибка.
+      return response.ok ? response.json() : null;
+    }).then(function (user) {
+      if (!user) {
+        goToStep(1);
+        return;
+      }
+
+      fillProfile(user);
+      goToStep(2);
+    }).catch(function () {
+      // Сеть подвела — начинаем с начала, это всегда корректный путь.
+      goToStep(1);
+    });
+  }
+
+  // Дату и пол показываем из ответа сервера, а не из localStorage: анкету
+  // могли заполнять с другого устройства. Поля нужны и на шаге 2 — из них
+  // собирается снимок профиля для возврата в анкету.
+  function fillProfile(user) {
+    const parts = String(user.dob || '').slice(0, 10).split('-');
+    if (parts.length === 3) {
+      year.value = parts[0];
+      month.value = parts[1];
+      day.value = String(Number(parts[2]));
+    }
+
+    gender = user.gender ? '1' : '0';
+    press(genderGroup, gender);
+  }
 }());

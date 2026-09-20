@@ -18,5 +18,6 @@ type (
 
 	UserRepository interface {
 		Save(ctx context.Context, userID int64, dob time.Time, gender bool) (User, error)
+		GetByID(ctx context.Context, userID int64) (User, error)
 	}
 )

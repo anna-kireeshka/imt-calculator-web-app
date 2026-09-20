@@ -3,6 +3,7 @@ package database
 import (
 	"app/imt-calculator-web-app/internal/domain"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -36,5 +37,24 @@ func (r *userRepo) Save(ctx context.Context, userID int64, dob time.Time, gender
 			&result.CreatedAt, &result.UpdatedAt); err != nil {
 		return domain.User{}, fmt.Errorf("save user: %w", err)
 	}
+	return result, nil
+}
+
+func (r *userRepo) GetByID(ctx context.Context, userID int64) (domain.User, error) {
+	var result domain.User
+
+	if err := r.conn.QueryRow(ctx, `
+		SELECT id, COALESCE(telegram_id, id), COALESCE(name, ''), dob, gender, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`, userID).
+		Scan(&result.ID, &result.TelegramID, &result.Name, &result.DoB, &result.Gender,
+			&result.CreatedAt, &result.UpdatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf("%w: пользователь не заведён", domain.ErrNotFound)
+		}
+		return domain.User{}, fmt.Errorf("read user: %w", err)
+	}
+
 	return result, nil
 }

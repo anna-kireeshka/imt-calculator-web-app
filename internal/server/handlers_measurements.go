@@ -5,7 +5,6 @@ import (
 	"app/imt-calculator-web-app/internal/fitness"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -30,11 +29,15 @@ func (h *HandlerMeasurements) get(w http.ResponseWriter, r *http.Request) {
 
 	var result, err = h.Measurement.GetByID(r.Context(), userID)
 	if err != nil {
-		fmt.Println(err)
+		if errors.Is(err, domain.ErrNotFound) {
+			http.Error(w, "замеров ещё нет", http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(result)
 }
 

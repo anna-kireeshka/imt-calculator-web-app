@@ -23,16 +23,15 @@ func (r *measurementsRepo) GetByID(ctx context.Context, userID int64) (domain.Me
 	var result domain.Measurement
 
 	if err := r.conn.QueryRow(ctx, `
-		SELECT user_id, height, weight, created_at
+		SELECT id, user_id, height, weight, COALESCE(activity_type, ''), COALESCE(goal, ''), created_at
 		FROM measurements
 		WHERE user_id = $1
-		ORDER BY created_at DESC 
+		ORDER BY created_at DESC
 		LIMIT 1
-
-
-	`, userID).Scan(&result.Height, &result.Weight); err != nil {
+	`, userID).Scan(&result.ID, &result.UserID, &result.Height, &result.Weight,
+		&result.ActivityType, &result.Goal, &result.CreatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Measurement{}, errors.New("у пользователя нет замеров")
+			return domain.Measurement{}, fmt.Errorf("%w: у пользователя нет замеров", domain.ErrNotFound)
 		}
 		return domain.Measurement{}, fmt.Errorf("read last measurement: %w", err)
 	}

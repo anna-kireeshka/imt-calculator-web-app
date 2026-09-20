@@ -3,6 +3,7 @@ package server
 import (
 	"app/imt-calculator-web-app/internal/domain"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 )
@@ -44,4 +45,25 @@ func (h *HandlerUser) save(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(result)
 
+}
+
+func (h *HandlerUser) get(w http.ResponseWriter, r *http.Request) {
+	var userID, ok = userIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var result, err = h.User.GetByID(r.Context(), userID)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			http.Error(w, "пользователь не заведён", http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(result)
 }

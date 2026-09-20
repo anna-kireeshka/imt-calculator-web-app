@@ -39,6 +39,7 @@ func (h *HandlerMeasurements) HandleRouter(mux *http.ServeMux) {
 }
 
 func (h *HandlerUser) HandleUserRouter(max *http.ServeMux) {
+	max.HandleFunc("GET"+" "+apiPrefix+"user", h.get)
 	max.HandleFunc("POST"+" "+apiPrefix+"user", h.save)
 }
 

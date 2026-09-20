@@ -41,7 +41,11 @@
     fetch('/api/v1/measurements/bmr', {
       headers: { 'Authorization': 'tma ' + tg.initData }
     }).then(function (response) {
+      // Показывать нечего — значит человек ещё не дозаполнил анкету. Куда
+      // именно его вести, решает сам онбординг: он спросит, заведён ли
+      // пользователь, и откроет нужный шаг.
       if (response.status === 404) {
+        if (toOnboarding()) return null;
         throw new Error('Пока нечего показывать — заполните анкету, по ней и считаются показатели');
       }
       if (!response.ok) {
@@ -52,9 +56,24 @@
       return response.json();
     }, function () {
       throw new Error('Нет связи с сервером. Проверьте соединение и попробуйте ещё раз');
-    }).then(render).catch(function (error) {
+    }).then(function (data) {
+      // null означает, что уже уходим на онбординг — рисовать нечего.
+      if (data !== null) render(data);
+    }).catch(function (error) {
       errorText.textContent = error.message;
     });
+  }
+
+  // Один переход на анкету за сессию: если бы /bmr продолжал отвечать 404 и
+  // после её заполнения, экраны зациклились бы, перекидывая друг на друга.
+  function toOnboarding() {
+    try {
+      if (sessionStorage.getItem('fitcalc.redirected') === '1') return false;
+      sessionStorage.setItem('fitcalc.redirected', '1');
+    } catch (e) {}
+
+    window.location.href = '/onboarding';
+    return true;
   }
 
   function render(data) {

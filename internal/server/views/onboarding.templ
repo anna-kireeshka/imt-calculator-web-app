@@ -92,6 +92,9 @@ templ Onboarding(page Page) {
 				</label>
 				<p class="error-text" id="ob-error-2" role="alert"></p>
 				<button class="btn" type="submit" id="ob-submit">Рассчитать</button>
+				// Возврат к дате рождения и полу. В Telegram то же делает
+				// системная кнопка «назад», но в браузере её нет.
+				<button class="btn-quiet" type="button" id="ob-back">Назад</button>
 			</section>
 		</form>
 	}
