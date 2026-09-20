@@ -7,6 +7,8 @@ DB_SSL_MODE ?= disable
 
 DB_DSN := "host=$(DB_HOST) port=$(DB_PORT) dbname=$(DB_NAME) user=$(DB_USER) password=$(DB_PASSWORD) sslmode=$(DB_SSL_MODE)"
 
+DATABASE_URL ?= postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
+
 ## ── Local dev ────────────────────────────────────────────────────────────────
 
 # Перегенерировать *_templ.go после правки .templ.
