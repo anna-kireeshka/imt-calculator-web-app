@@ -90,7 +90,7 @@ func (r *measurementsRepo) GetDataForCalculation(ctx context.Context, userId int
 	if err := r.conn.QueryRow(ctx, `
 		SELECT m.user_id, m.height, m.weight, m.activity_type, m.goal, u.dob, u.gender
 		FROM measurements m
-		INNER JOIN users u ON u.id = m.user_id
+		INNER JOIN users u ON u.telegram_id = m.user_id
 		WHERE m.user_id = $1
 		ORDER BY u.created_at
 		LIMIT 1
