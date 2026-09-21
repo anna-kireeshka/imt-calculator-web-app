@@ -24,6 +24,12 @@
   --bad-bg: #ffe9e7;
   --low: #0a84ff;
   --low-bg: #e3f1ff;
+
+  /* Белки берут --low, жиры и углеводы — свои пары (цвета из макета). */
+  --fat: #a8871f;
+  --fat-bg: #faf2d8;
+  --carb: #7c4fc4;
+  --carb-bg: #f0e8fb;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,6 +52,11 @@
     --bad-bg: #3d1c19;
     --low: #0a84ff;
     --low-bg: #16283d;
+
+    --fat: #c8a838;
+    --fat-bg: #2d3020;
+    --carb: #a07de0;
+    --carb-bg: #2a2035;
   }
 }
 
@@ -308,28 +319,6 @@ input:focus-visible, select:focus-visible {
 .row--accent { font-weight: 600; }
 .row--accent span:last-child { color: var(--link); }
 
-.metric { text-align: center; }
-.metric p { margin: 2px 0 0; font-size: 12px; }
-
-.figure { font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.figure--small { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
-
-.readout { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-
-.pill {
-  font-size: 12px;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-weight: 500;
-  background: var(--bg-secondary);
-  color: var(--hint);
-}
-
-.pill[data-zone="low"]  { background: var(--low-bg);  color: var(--low); }
-.pill[data-zone="ok"]   { background: var(--ok-bg);   color: var(--ok); }
-.pill[data-zone="warn"] { background: var(--warn-bg); color: var(--warn); }
-.pill[data-zone="bad"]  { background: var(--bad-bg);  color: var(--bad); }
-
 .delta--down { color: var(--ok); font-size: 13px; }
 .delta--up { color: var(--bad); font-size: 13px; }
 
@@ -337,63 +326,249 @@ input:focus-visible, select:focus-visible {
 .note--ok { background: var(--ok-bg); color: var(--ok); }
 .note--warn { background: var(--warn-bg); color: var(--warn); }
 
-/* ── шкала ИМТ и прогресс ───────────────────────────────────── */
+/* ── текущий вес на экране истории ───────────────────────────── */
 
-/* Сегменты и подписи делят ширину одними и теми же долями (18,5 : 6,5 : 5 : 10
-   от шкалы 0–40), поэтому число стоит ровно под границей своей зоны,
-   а маркер — под своим числом. */
-.gauge-wrap {
-  position: relative;
-  margin: 12px 0 4px;
+/* Кнопка во всю ширину: по ней попадают пальцем не целясь, а внутри
+   живёт та же пара «метка — крупное число», что на экране показателей. */
+.weight {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--bg-section);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
 }
 
-.gauge {
+.weight:active { opacity: .85; }
+
+.weight__label {
+  grid-column: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hint);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.weight__value {
+  grid-column: 1;
   display: flex;
-  height: 6px;
-  border-radius: 3px;
-  overflow: hidden;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-.gauge__pin {
+.weight__unit { font-size: 15px; font-weight: 600; color: var(--hint); letter-spacing: 0; }
+
+.weight__icon {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 20px;
+  color: var(--link);
+}
+
+.weight-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: var(--bg-section);
+}
+
+.weight-edit__actions { display: flex; align-items: center; gap: 8px; }
+.weight-edit__actions .btn { flex: 1; }
+
+/* ── экран показателей ──────────────────────────────────────── */
+
+.section {
+  background: var(--bg-section);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section--tight { gap: 0; }
+
+.section-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hint);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.bmi-row { display: flex; align-items: center; gap: 12px; }
+
+.bmi-value {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  color: var(--hint);
+  border: 1px solid transparent;
+}
+
+.badge[data-zone="low"]  { background: var(--low-bg);  color: var(--low);  border-color: var(--low); }
+.badge[data-zone="ok"]   { background: var(--ok-bg);   color: var(--ok);   border-color: var(--ok); }
+.badge[data-zone="warn"] { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.badge[data-zone="bad"]  { background: var(--bad-bg);  color: var(--bad);  border-color: var(--bad); }
+
+/* ── шкала ИМТ ──
+   Доли сегментов взяты из макета: 6,5 : 6,5 : 5 : 10 при сумме 28. Они не
+   повторяют ширину диапазонов ИМТ, поэтому позиция указателя считается в JS
+   кусочно — доля внутри своего сегмента.
+   Зазор между сегментами сделан прозрачной рамкой, а не gap: при box-sizing
+   границы сегментов остаются ровно на долях 23,214% / 46,429% / 64,286%,
+   и те же проценты годятся для подписей и указателя. */
+.scale { position: relative; }
+
+.scale__track { position: relative; height: 44px; }
+
+.scale__pin {
   position: absolute;
-  top: -3px;
-  width: 3px;
-  height: 12px;
-  margin-left: -1.5px;
-  border-radius: 2px;
-  background: var(--text);
-  box-shadow: 0 0 0 2px var(--bg-section);
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
   transition: left .25s ease-out;
 }
 
-.gauge > span { display: block; }
+.scale__bubble {
+  background: var(--text);
+  color: var(--bg-section);
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 
-/* Границы зон вместо gap: ширина сегментов остаётся линейной,
-   поэтому процент маркера совпадает с делениями. */
-.gauge > span + span { border-left: 1px solid var(--bg-section); }
+.scale__arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text);
+}
 
-/* Доли общие для сегментов и подписей — так число встаёт ровно под
-   границей своей зоны. */
-.gauge__low  { flex: 18.5; }
-.gauge__ok   { flex: 6.5; }
-.gauge__warn { flex: 5; }
-.gauge__bad  { flex: 10; }
+.scale__line {
+  width: 2px;
+  height: 10px;
+  margin-top: 2px;
+  border-radius: 1px;
+  background: var(--text);
+}
 
-/* Цвет — только у сегментов шкалы: те же классы висят и на подписях,
-   и без этой вложенности числа превращались во вторую цветную полосу. */
-.gauge > .gauge__low  { background: var(--low); }
-.gauge > .gauge__ok   { background: var(--ok); }
-.gauge > .gauge__warn { background: var(--warn); }
-.gauge > .gauge__bad  { background: var(--bad); }
+.scale__bar { display: flex; height: 8px; }
 
-.gauge-marks {
-  display: flex;
-  font-size: 11px;
+.scale__seg {
+  border-radius: 100px;
+  border-right: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scale__seg:last-child { border-right: 0; }
+
+.scale__seg--low  { flex: 6.5; background-color: var(--low); }
+.scale__seg--ok   { flex: 6.5; background-color: var(--ok); }
+.scale__seg--warn { flex: 5;   background-color: var(--warn); }
+.scale__seg--bad  { flex: 10;  background-color: var(--bad); }
+
+.scale__ticks {
+  position: relative;
+  height: 18px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--hint);
   font-variant-numeric: tabular-nums;
 }
 
-.gauge-marks span { text-align: right; }
+.scale__tick { position: absolute; transform: translateX(-50%); }
+
+.scale__tick--low  { left: 23.214%; }
+.scale__tick--ok   { left: 46.429%; }
+.scale__tick--warn { left: 64.286%; }
+/* Последняя подпись прижата к правому краю: сдвиг на половину увёл бы её за шкалу. */
+.scale__tick--bad  { right: 0; transform: none; }
+
+/* ── калории ── */
+.kcal { display: flex; align-items: center; justify-content: space-between; }
+.kcal__label { font-size: 16px; font-weight: 700; }
+.kcal__value { display: flex; align-items: baseline; gap: 4px; }
+
+.kcal__number {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--link);
+  font-variant-numeric: tabular-nums;
+}
+
+.kcal__unit { font-size: 14px; font-weight: 600; color: var(--link); }
+
+/* ── БЖУ ── */
+.macros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+
+.macro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 14px;
+  padding: 14px 12px;
+}
+
+.macro--protein { background: var(--low-bg); }
+.macro--fat     { background: var(--fat-bg); }
+.macro--carb    { background: var(--carb-bg); }
+
+.macro__name {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.macro--protein .macro__name, .macro--protein .macro__unit { color: var(--low); }
+.macro--fat     .macro__name, .macro--fat     .macro__unit { color: var(--fat); }
+.macro--carb    .macro__name, .macro--carb    .macro__unit { color: var(--carb); }
+
+.macro__range {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.macro__unit { font-size: 13px; font-weight: 600; }
 
 .bar { height: 8px; border-radius: 4px; background: var(--bg-secondary); overflow: hidden; }
 .bar__fill { height: 100%; background: var(--button); transition: width .2s; }
@@ -517,5 +692,5 @@ input:focus-visible, select:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .skeleton, .spinner { animation: none; }
-  .bar__fill, .switch, .switch::after, .gauge__pin { transition: none; }
+  .bar__fill, .switch, .switch::after, .scale__pin { transition: none; }
 }

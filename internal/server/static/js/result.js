@@ -9,6 +9,7 @@
 
   const bmiZone = document.getElementById('bmi-zone');
   const bmiPin = document.getElementById('bmi-pin');
+  const bmiBubble = document.getElementById('bmi-bubble');
   const errorText = document.getElementById('result-error');
 
   const out = {
@@ -18,16 +19,18 @@
     carbs: document.getElementById('cal-carbs')
   };
 
-  // Шкала нарисована от 0 до 40: доли сегментов 18,5 : 6,5 : 5 : 10.
-  // Пороги зон — оформление, а не расчёт, поэтому остаются на клиенте.
-  const SCALE_MAX = 40;
-
+  // Зоны ИМТ и их доли на шкале. from/to — границы значения, width — ширина
+  // сегмента в разметке: доли взяты из макета (6,5 : 6,5 : 5 : 10) и шире
+  // диапазонов не поровну, поэтому позиция считается внутри своего сегмента,
+  // а не одной линейной формулой по всей шкале.
   const ZONES = [
-    { max: 18.5, name: 'Недостаток', key: 'low' },
-    { max: 25, name: 'Норма', key: 'ok' },
-    { max: 30, name: 'Избыток', key: 'warn' },
-    { max: Infinity, name: 'Ожирение', key: 'bad' }
+    { from: 0,    to: 18.5, width: 6.5, name: 'Недостаток', key: 'low' },
+    { from: 18.5, to: 25,   width: 6.5, name: 'Норма',      key: 'ok' },
+    { from: 25,   to: 30,   width: 5,   name: 'Избыток',    key: 'warn' },
+    { from: 30,   to: 40,   width: 10,  name: 'Ожирение',   key: 'bad' }
   ];
+
+  const SCALE_WIDTH = ZONES.reduce(function (sum, zone) { return sum + zone.width; }, 0);
 
   load();
 
@@ -84,17 +87,18 @@
     errorText.textContent = '';
 
     const zone = zoneOf(data.imt);
+    const shown = window.fitcalc.decimal(data.imt, 1);
 
-    bmiValue.textContent = window.fitcalc.decimal(data.imt, 1);
+    bmiValue.textContent = shown;
     bmiZone.textContent = zone.name;
     bmiZone.setAttribute('data-zone', zone.key);
 
-    // Значения за краями шкалы прижимают маркер к её концу.
-    bmiPin.style.left = Math.max(0, Math.min(100, data.imt / SCALE_MAX * 100)) + '%';
+    bmiBubble.textContent = shown;
+    bmiPin.style.left = position(data.imt) + '%';
     bmiPin.hidden = false;
 
     out.target.textContent = typeof data.ccal === 'number'
-      ? window.fitcalc.number(data.ccal) + ' ккал'
+      ? window.fitcalc.number(data.ccal)
       : '—';
 
     const macros = data.macros || {};
@@ -105,9 +109,29 @@
 
   function zoneOf(bmi) {
     for (let i = 0; i < ZONES.length; i++) {
-      if (bmi < ZONES[i].max) return ZONES[i];
+      if (bmi < ZONES[i].to) return ZONES[i];
     }
     return ZONES[ZONES.length - 1];
+  }
+
+  // Доля от ширины шкалы в процентах. Значения за краями прижимают указатель
+  // к концу полосы, иначе он ушёл бы за неё.
+  function position(bmi) {
+    let offset = 0;
+
+    for (let i = 0; i < ZONES.length; i++) {
+      const zone = ZONES[i];
+
+      if (bmi < zone.to || i === ZONES.length - 1) {
+        const share = (bmi - zone.from) / (zone.to - zone.from);
+        const clamped = Math.max(0, Math.min(1, share));
+        return (offset + clamped * zone.width) / SCALE_WIDTH * 100;
+      }
+
+      offset += zone.width;
+    }
+
+    return 0;
   }
 
   // Сервер отдаёт нижнюю и верхнюю границы нормы: «90–120 г». Совпали —
@@ -118,6 +142,6 @@
     const low = window.fitcalc.number(bounds[0]);
     const high = window.fitcalc.number(bounds[1]);
 
-    return (low === high ? low : low + '–' + high) + ' г';
+    return low === high ? low : low + '–' + high;
   }
 }());

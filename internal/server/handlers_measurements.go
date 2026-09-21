@@ -5,6 +5,7 @@ import (
 	"app/imt-calculator-web-app/internal/fitness"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -29,15 +30,11 @@ func (h *HandlerMeasurements) get(w http.ResponseWriter, r *http.Request) {
 
 	var result, err = h.Measurement.GetByID(r.Context(), userID)
 	if err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			http.Error(w, "замеров ещё нет", http.StatusNotFound)
-			return
-		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		fmt.Println(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(result)
 }
 
@@ -83,10 +80,6 @@ func (h *HandlerMeasurements) save(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-func (h *HandlerMeasurements) update(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "not implemented", http.StatusNotImplemented)
-}
-
 func (h *HandlerMeasurements) getBMR(w http.ResponseWriter, r *http.Request) {
 	var userID, ok = userIDFromContext(r.Context())
 	if !ok {
@@ -106,8 +99,6 @@ func (h *HandlerMeasurements) getBMR(w http.ResponseWriter, r *http.Request) {
 
 	var age = fitness.AgeAt(resp.DoB, time.Local)
 
-	// Неизвестные активность или цель — это испорченная строка в БД, а не
-	// ошибка запроса: отвечаем 500, а не отдаём молча неверную норму.
 	var ccal, errCcal = fitness.Callories(resp.Weight, resp.Height, age, resp.ActivityType, resp.Goal, resp.Gender)
 	if errCcal != nil {
 		http.Error(w, errCcal.Error(), http.StatusInternalServerError)
@@ -122,11 +113,32 @@ func (h *HandlerMeasurements) getBMR(w http.ResponseWriter, r *http.Request) {
 
 	var result = domain.BMR{
 		IMT:    fitness.IMT(resp.Height, resp.Weight),
-		Age:    age,
 		Ccal:   int(math.Round(ccal)),
 		Macros: macros,
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(result)
+}
+
+func (h *HandlerMeasurements) getHistory(w http.ResponseWriter, r *http.Request) {
+	var userID, ok = userIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var resp, err = h.Measurement.GetHistory(r.Context(), userID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for i := range resp {
+		resp[i].IMT = fitness.IMT(resp[i].Height, resp[i].Weight)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(resp)
 }

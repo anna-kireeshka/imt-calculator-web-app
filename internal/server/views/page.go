@@ -26,9 +26,11 @@ var tabs = []struct {
 	Label string
 }{
 	{ID: "bmi", Href: "/", Icon: "ti-scale", Label: "ИМТ"},
-	{ID: "calories", Href: "/diary", Icon: "ti-flame", Label: "Дневник"},
 	{ID: "history", Href: "/history", Icon: "ti-history", Label: "История"},
-	{ID: "settings", Href: "/settings", Icon: "ti-settings", Label: "Ещё"},
+	// Дневник и настройки временно скрыты — экраны ещё не на живых данных.
+	// Сами страницы остаются доступны по /diary и /settings.
+	// {ID: "calories", Href: "/diary", Icon: "ti-flame", Label: "Дневник"},
+	// {ID: "settings", Href: "/settings", Icon: "ti-settings", Label: "Ещё"},
 }
 
 // current помечает активный пункт: атрибут либо присутствует, либо его нет

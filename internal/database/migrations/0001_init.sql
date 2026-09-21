@@ -32,3 +32,32 @@ CREATE TYPE macroses AS (
 );
 
 CREATE INDEX measurements_user_created_idx ON measurements (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS products (
+    id                  BIGINT          PRIMARY KEY,
+    name                TEXT,
+    protein             NUMERIC(5,2),
+    fat                 NUMERIC(5,2),
+    carbohydrates       NUMERIC(5,2),
+    kcal                NUMERIC(5,2),
+    created_at			TIMESTAMPTZ		NOT NULL DEFAULT now()
+)
+
+CREATE TABLE IF NOT EXISTS meals (
+    id                  BIGINT           PRIMARY KEY,
+    user_id	            BIGINT,
+    name                TEXT,
+    cooked_weigh        NUMERIC(5,2),
+    servings            INT,
+    protein             NUMERIC(5,2),
+    fat                 NUMERIC(5,2),
+    carbohydrates       NUMERIC(5,2),
+    kcal                NUMERIC(5,2),
+    created_at          TIMESTAMPTZ      NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ      NOT NULL DEFAULT now(),
+    deleted_at          TIMESTAMPTZ
+)
+
+CREATE INDEX meals_user_id_created_at_idx
+    ON meals (user_id, created_at DESC)
+    WHERE deleted_at IS NULL;

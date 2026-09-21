@@ -1,8 +1,8 @@
 {{define "tabbar"}}
 <nav class="tabbar">
   <a class="tabbar__item" href="/"         {{if eq .Tab "bmi"}}aria-current="page"{{end}}><i class="ti ti-scale"></i>ИМТ</a>
-  <a class="tabbar__item" href="/calories" {{if eq .Tab "calories"}}aria-current="page"{{end}}><i class="ti ti-flame"></i>Калории</a>
+  <!-- <a class="tabbar__item" href="/calories" {{if eq .Tab "calories"}}aria-current="page"{{end}}><i class="ti ti-flame"></i>Калории</a> -->
   <a class="tabbar__item" href="/history"  {{if eq .Tab "history"}}aria-current="page"{{end}}><i class="ti ti-history"></i>История</a>
-  <a class="tabbar__item" href="/settings" {{if eq .Tab "settings"}}aria-current="page"{{end}}><i class="ti ti-settings"></i>Ещё</a>
+  <!-- <a class="tabbar__item" href="/settings" {{if eq .Tab "settings"}}aria-current="page"{{end}}><i class="ti ti-settings"></i>Настройки</a> -->
 </nav>
 {{end}}

@@ -33,9 +33,9 @@ func wrapError(endpoint HadlerFuncWithError) {
 func (h *HandlerMeasurements) HandleRouter(mux *http.ServeMux) {
 	mux.HandleFunc("GET"+" "+apiPrefix+"measurements", h.get)
 	mux.HandleFunc("POST"+" "+apiPrefix+"measurements", h.save)
-	mux.HandleFunc("PATCH /api/v1/measurements", h.update)
 
 	mux.HandleFunc("GET"+" "+apiPrefix+"measurements/bmr", h.getBMR)
+	mux.HandleFunc("GET"+" "+apiPrefix+"measurements/history", h.getHistory)
 }
 
 func (h *HandlerUser) HandleUserRouter(max *http.ServeMux) {

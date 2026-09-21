@@ -29,10 +29,17 @@ type (
 		Gender       bool
 	}
 
+	History struct {
+		IMT       float64   `json:"imt"`
+		Height    int       `json:"height"`
+		Weight    float64   `json:"weight"`
+		CreatedAt time.Time `json:"created_at"`
+	}
+
 	MeasurementsRepository interface {
 		GetByID(ctx context.Context, userID int64) (Measurement, error)
 		Save(ctx context.Context, userID int64, height int, weight float64, activityType string, goal string) (Measurement, error)
-		Update(ctx context.Context, userID int64, m Measurement) (Measurement, error)
 		GetDataForCalculation(ctx context.Context, userID int64) (FormulaData, error)
+		GetHistory(ctx context.Context, userId int64) ([]History, error)
 	}
 )
