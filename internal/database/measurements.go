@@ -94,7 +94,7 @@ func (r *measurementsRepo) GetDataForCalculation(ctx context.Context, userId int
 	if err := r.conn.QueryRow(ctx, `
 		SELECT m.user_id, m.height, m.weight, m.activity_type, m.goal, u.dob, u.gender
 		FROM measurements m
-		INNER JOIN user u ON u.user_id = m.user_id
+		INNER JOIN user u ON u.id = m.user_id
 		ORDER BY u.created_at
 	`, userId).
 		Scan(&result.UserID, &result.Height, &result.Weight, &result.ActivityType, &result.Goal, &result.DoB, &result.Gender); err != nil {
