@@ -30,14 +30,14 @@ func (h *HandlerUser) save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		badRequest(w, "user save: decode body", err)
 		return
 	}
 
 	var result, err = h.User.Save(r.Context(), userID, body.DoB, body.Gender)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "user save", err)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (h *HandlerUser) get(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "пользователь не заведён", http.StatusNotFound)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "user get", err)
 		return
 	}
 

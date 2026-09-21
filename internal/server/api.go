@@ -6,30 +6,6 @@ import (
 
 const apiPrefix = "/api/v1/"
 
-type HTTPError struct {
-	Code       int
-	Message    string
-	InnerError error
-}
-
-func NewHTTPError(code int, message string, inner error) *HTTPError {
-	return &HTTPError{
-		Code:       code,
-		Message:    message,
-		InnerError: inner,
-	}
-}
-
-type HadlerFuncWithError = func(w http.ResponseWriter, r http.Request)
-
-func (e *HTTPError) Error() string {
-	return e.Message
-}
-
-func wrapError(endpoint HadlerFuncWithError) {
-
-}
-
 func (h *HandlerMeasurements) HandleRouter(mux *http.ServeMux) {
 	mux.HandleFunc("GET"+" "+apiPrefix+"measurements", h.get)
 	mux.HandleFunc("POST"+" "+apiPrefix+"measurements", h.save)

@@ -3,7 +3,6 @@ package database
 import (
 	"app/imt-calculator-web-app/internal/domain"
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -31,10 +30,7 @@ func (r *measurementsRepo) GetByID(ctx context.Context, userID int64) (domain.Me
 
 
 	`, userID).Scan(&result.Height, &result.Weight); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Measurement{}, errors.New("у пользователя нет замеров")
-		}
-		return result, fmt.Errorf("read last measurement: %w", err)
+		return domain.Measurement{}, wrapQueryError(err, "read last measurement", "у пользователя нет замеров")
 	}
 
 	return result, nil
@@ -50,7 +46,7 @@ func (r *measurementsRepo) Save(ctx context.Context, userID int64, height int, w
 	`, userID, height, weight, activityType, goal).
 		Scan(&result.ID, &result.UserID, &result.Height, &result.Weight, &result.BustSize, &result.WaistSize,
 			&result.HipSize, &result.ActivityType, &result.Goal, &result.CreatedAt); err != nil {
-		return result, fmt.Errorf("commit tx: %w", err)
+		return result, wrapQueryError(err, "save new measurements", "Ошибка добавления замеров")
 	}
 
 	return result, nil
@@ -67,7 +63,7 @@ func (r *measurementsRepo) GetHistory(ctx context.Context, userId int64) ([]doma
 	`, userId)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read measurements history: %w", err)
 	}
 
 	defer rows.Close()
@@ -75,14 +71,14 @@ func (r *measurementsRepo) GetHistory(ctx context.Context, userId int64) ([]doma
 	for rows.Next() {
 		var el domain.History
 		if err := rows.Scan(&el.Height, &el.Weight, &el.CreatedAt); err != nil {
-			return result, err
+			return result, fmt.Errorf("scan measurements history: %w", err)
 		}
 
 		result = append(result, el)
 	}
 
 	if err = rows.Err(); err != nil {
-		return result, err
+		return result, fmt.Errorf("read measurements history: %w", err)
 	}
 
 	return result, nil
@@ -95,10 +91,12 @@ func (r *measurementsRepo) GetDataForCalculation(ctx context.Context, userId int
 		SELECT m.user_id, m.height, m.weight, m.activity_type, m.goal, u.dob, u.gender
 		FROM measurements m
 		INNER JOIN users u ON u.id = m.user_id
+		WHERE m.user_id = $1
 		ORDER BY u.created_at
+		LIMIT 1
 	`, userId).
 		Scan(&result.UserID, &result.Height, &result.Weight, &result.ActivityType, &result.Goal, &result.DoB, &result.Gender); err != nil {
-		return result, fmt.Errorf("commit tx: %w", err)
+		return domain.FormulaData{}, wrapQueryError(err, "get data for calculation", "нет данных для расчёта")
 	}
 	return result, nil
 }

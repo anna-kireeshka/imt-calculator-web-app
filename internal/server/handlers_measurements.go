@@ -5,7 +5,6 @@ import (
 	"app/imt-calculator-web-app/internal/fitness"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -30,7 +29,12 @@ func (h *HandlerMeasurements) get(w http.ResponseWriter, r *http.Request) {
 
 	var result, err = h.Measurement.GetByID(r.Context(), userID)
 	if err != nil {
-		fmt.Println(err)
+		if errors.Is(err, domain.ErrNotFound) {
+			http.Error(w, "у вас пока нет замеров", http.StatusNotFound)
+			return
+		}
+		internalError(w, "measurements get", err)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -55,7 +59,7 @@ func (h *HandlerMeasurements) save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		badRequest(w, "measurements save: decode body", err)
 		return
 	}
 
@@ -71,7 +75,7 @@ func (h *HandlerMeasurements) save(w http.ResponseWriter, r *http.Request) {
 
 	var result, err = h.Measurement.Save(r.Context(), userID, body.Height, body.Weight, body.ActivityType, body.Goal)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "measurements save", err)
 		return
 	}
 
@@ -93,7 +97,7 @@ func (h *HandlerMeasurements) getBMR(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "нет данных для расчёта", http.StatusNotFound)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "measurements bmr", err)
 		return
 	}
 
@@ -101,13 +105,13 @@ func (h *HandlerMeasurements) getBMR(w http.ResponseWriter, r *http.Request) {
 
 	var ccal, errCcal = fitness.Callories(resp.Weight, resp.Height, age, resp.ActivityType, resp.Goal, resp.Gender)
 	if errCcal != nil {
-		http.Error(w, errCcal.Error(), http.StatusInternalServerError)
+		internalError(w, "measurements bmr: calories", errCcal)
 		return
 	}
 
 	var macros, errMacros = fitness.Macros(resp.Weight, resp.Goal)
 	if errMacros != nil {
-		http.Error(w, errMacros.Error(), http.StatusInternalServerError)
+		internalError(w, "measurements bmr: macros", errMacros)
 		return
 	}
 
@@ -131,7 +135,7 @@ func (h *HandlerMeasurements) getHistory(w http.ResponseWriter, r *http.Request)
 	var resp, err = h.Measurement.GetHistory(r.Context(), userID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "measurements history", err)
 		return
 	}
 

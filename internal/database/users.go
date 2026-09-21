@@ -3,7 +3,6 @@ package database
 import (
 	"app/imt-calculator-web-app/internal/domain"
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -50,10 +49,7 @@ func (r *userRepo) GetByID(ctx context.Context, userID int64) (domain.User, erro
 	`, userID).
 		Scan(&result.ID, &result.TelegramID, &result.Name, &result.DoB, &result.Gender,
 			&result.CreatedAt, &result.UpdatedAt); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, fmt.Errorf("%w: пользователь не заведён", domain.ErrNotFound)
-		}
-		return domain.User{}, fmt.Errorf("read user: %w", err)
+		return domain.User{}, wrapQueryError(err, "read user", "пользователь не заведён")
 	}
 
 	return result, nil
